@@ -31,4 +31,10 @@ public class QuestionController {
         return openAIService.getCapital(capitalRequest);
     }
 
+    @PostMapping("/capitalJson")
+    public Answer getCapitalJson(@RequestBody CapitalRequest capitalRequest) {
+        System.out.println("THE REQUEST IS " + capitalRequest.stateOrCountry());
+        return openAIService.getCapitalJson(capitalRequest);
+    }
+
 }

@@ -1,5 +1,6 @@
 package guru.springframework.springaiintro.services;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import guru.springframework.springaiintro.model.Answer;
 import guru.springframework.springaiintro.model.CapitalRequest;
 import guru.springframework.springaiintro.model.Question;
@@ -21,6 +22,8 @@ public class OpenAIServiceImpl implements OpenAIService {
 
     private final ChatModel chatModel;
 
+    private final ObjectMapper objectMapper;
+
     @Value("classpath:templates/template.st")
     private Resource capitalPrompt;
 
@@ -30,14 +33,29 @@ public class OpenAIServiceImpl implements OpenAIService {
     @Value("classpath:templates/template-with-info-test.st")
     private Resource capitalPromptWithInfoTest;
 
-    public OpenAIServiceImpl(ChatModel chatModel) {
+    @Value("classpath:templates/template-with-info-json.st")
+    private Resource capitalPromptWithInfoJson;
+
+    public OpenAIServiceImpl(ChatModel chatModel, ObjectMapper objectMapper) {
         this.chatModel = chatModel;
+        this.objectMapper = objectMapper;
     }
 
     @Override
     public Answer getAnswer(Question question) {
         PromptTemplate promptTemplate = new PromptTemplate(question.question());
         Prompt prompt = promptTemplate.create();
+        ChatResponse response = chatModel.call(prompt);
+        return new Answer(response.getResult().getOutput().getContent());
+    }
+
+    @Override
+    public Answer getCapitalJson(CapitalRequest capitalRequest) {
+        System.out.println(capitalRequest.toString());
+        PromptTemplate promptTemplate = new PromptTemplate(capitalPromptWithInfoJson);
+        System.out.println(promptTemplate);
+        Map<String, Object> map = Map.of("stateOrCountry", capitalRequest.stateOrCountry());
+        Prompt prompt = promptTemplate.create(map);
         ChatResponse response = chatModel.call(prompt);
         return new Answer(response.getResult().getOutput().getContent());
     }
